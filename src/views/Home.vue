@@ -16,32 +16,67 @@
 
 <script>
 // @ is an alias to /src
+import supabase from '../supabase-client';
 
 export default {
   name: 'Home',
   data: () => {
     return {
       titulo: '',
-      tarefas: [
-        { id: 1, titulo: 'Tarefa 1' },
-        { id: 2, titulo: 'Tarefa 2' },
-        { id: 3, titulo: 'Tarefa 3' },
-      ]
+      tarefas: []
     };
   },
   methods: {
-    adicionarTarefa(){
-      this.tarefas.push({
-        id: 4,
-        titulo: this.titulo
-      });
-      this.titulo='';
+    async adicionarTarefa(){
+      // this.tarefas.push({
+      //   id: 4,
+      //   titulo: this.titulo
+      // });
+      // this.titulo='';
+      try{
+        const res = await supabase.from('tarefas')
+          .insert({
+            user_id: supabase.auth.user().id,
+            titulo: this.titulo
+          });
+
+        if(res.error){
+          alert(res.error.message);
+        } else {
+          this.titulo = '';
+          this.carregarTarefas();
+        }
+
+      } catch (err){
+        console.error(err);
+        alert('Nao foi possivel cadastrar tarefa');
+      }
     },
     concluirTarefa(tarefa){
       // const idx = this.tarefas.indexOf(tarefa);
       // this.tarefas.splice(idx, 1);
       this.tarefas = this.tarefas.filter(x => x !== tarefa);
-    }
+    },
+    async carregarTarefas(){
+      try{
+        const res = await supabase.from ('tarefas')
+          .select('id, titulo')
+          .filter('concluida', 'eq', false);
+
+        if(res.error){
+          alert(res.error.message);
+        } else {
+          this.tarefas = res.data;
+        }
+
+      } catch (err){
+        console.error(err);
+        alert('Nao foi possivel carregar as tarefas');
+      }
+    },
+  },
+  mounted(){
+    this.carregarTarefas();
   },
   components: {
   }

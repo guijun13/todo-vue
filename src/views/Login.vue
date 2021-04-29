@@ -31,7 +31,7 @@ export default {
         });
 
         if(res.error){
-          console.log(res.error);
+          console.log(res.error.message);
         } else {
           router.push('/');
         }
